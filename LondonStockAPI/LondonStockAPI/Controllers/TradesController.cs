@@ -68,7 +68,29 @@ namespace LondonStockAPI.Controllers
         [HttpPost("stocks/filter")]
         public async Task<ActionResult<List<StockReadDto>>> GetSelectedStockValues([FromBody] List<string> tickers)
         {
-            var result = await _repository.GetStocksAsync(tickers);
+            var result = new ConcurrentBag<Stock>();
+            var missingTickers = new List<string>();
+
+            foreach (var ticker in tickers)
+            {
+                if (_cache.TryGetValue(ticker, out Stock? cachedStock))
+                {
+                    result.Add(cachedStock);
+                }
+                else
+                {
+                    missingTickers.Add(ticker);
+                }
+            }
+            if (missingTickers.Count > 0)
+            {
+                var stocksFromRepo = await _repository.GetStocksAsync(missingTickers);
+                Parallel.ForEach(stocksFromRepo, stock =>
+                {
+                    _cache.Set(stock.TickerSymbol, stock); // Add to cache
+                    result.Add(stock); // ConcurrentBag is thread-safe, no need for locking
+                });
+            }
             return Ok(_mapper.Map<IList<StockReadDto>>(result));
         }
     }
