@@ -34,7 +34,7 @@ MVP Features:
 
 
 Improvements
-1. Introducing a business layer service ITradeEngine between API and Repository. Currently calculation stock Price in repository is tighlty coupled. Having a trade engine for calculation makes it more modular and testable. This will also helps if there is any change in the calculation.
+1. Introducing a business layer service ITradeEngine between API and Repository. Currently calculating stock price in repository is tighlty coupled. Having a trade engine for calculation makes it more modular and testable. This will also helps if there is any change in the calculation or addition of new format for calculation.
 2. Use model validation attributes and return detailed validation errors. Implement global exception handling middleware for consistent error responses.
 3. Secure the end points by adding authentication and add role based access control for sensitive operations like SubmitTrade.
 4. Add API versioning, to support multiple API versions to ensure backward compatibility.
@@ -42,9 +42,9 @@ Improvements
 Bottlenecks
 1. In the production single instance of API cannot handle high concurrent requests. Need to implement horizontal auto-scaling.
 2. In current solution I am using InMemory cache. When we scale our API horizontally we need centralized cache. Need to implement IDistributeCache and make use of Redis cache.
-3. This application in production will be high write intensive. And data can be lost if API or database fails. We can use asynchronous processing using message queue, it decouples writes from reads and buffers load. In this case our API becomes producer and writes message to queue. We can implement a consumer service as worker service which reads data from queue and writes it to database. Same time we can have another consumer which updates the stock average price in Redis cache. At the same time we can have separate Write and Read databases.
-4. Get All Stocks can take more time to load as the number of stocks increases. We can implement pagination here.
+3. This application in production will be high write intensive. And data can be lost if API or database fails. We can use asynchronous processing using message queue, it decouples writes from reads and buffers load. In this case our API becomes producer and writes message to queue. We can implement a consumer service as worker service which reads data from queue and writes it to database. Same time we can have another consumer which updates the stock average price in Redis cache. And also we can have separate Write and Read databases.
+4. Getting All Stocks can take more time to load as the number of stocks increases. We can implement pagination here.
 5. At the beginning of the day we can pre-calculate all the stock average values and pre-populate in Cache.
 6. High write load might fail due to timeouts. We can have retry policies, using polly.
-7. I am not sure whether we can have rate limiting because I need to know more about business requirement. And as per I think each broker can submit many trades in given time.
+7. I am not sure whether we can have rate limiting because I need to know more about business requirement. And as per now I think that each broker can submit many trades in given time.
 8. And sometimes we can have load on a single stock. We can consider data partitioning on the ticker symbol.
