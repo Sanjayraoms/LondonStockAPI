@@ -9,7 +9,7 @@ namespace LondonStockAPI.Profiles
         public TradesProfile()
         {
             //Source -> Target
-            CreateMap<Trade, TradeReadDto>();
+            CreateMap<Stock, StockReadDto>();
             CreateMap<TradeCreatDto, Trade>();
         }
     }
